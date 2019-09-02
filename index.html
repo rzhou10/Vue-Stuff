@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Hello World with Vue.js</title>
+        <link rel="stylesheet" href="index.css">
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    </head>
+    <body>
+        
+        <div id="app">
+            {{ message }}
+        </div>
+
+        <div id="app-2">
+            <!-- v-bind is a 'directive': special attributes provided by Vue -->
+            <!-- special reactive behavior to rendered DOM -->
+            <span v-bind:title="message">
+                Hover your mouse over me for a few seconds
+                to see my dynamically bound title!
+            </span>
+        </div>
+
+        <div id="app-3">
+            <span v-if="seen">Now you see me</span>
+        </div>
+
+        <div id="app-4">
+            <ol>
+                <li v-for="todo in todos">
+                    {{ todo.text }}
+                </li>
+            </ol>
+        </div>
+
+        <div id="app-5">
+            <p>{{ message }}</p>
+            <button v-on:click="reverseMessage">Reverse Message</button>
+        </div>
+
+        <div id="app-6">
+            <p>{{ message }}</p>
+            <!-- v-model makes 2-way binding between form input and app state -->
+            <input v-model="message">
+        </div>
+
+        <div id="app-7">
+            <ol>
+                <!--
+                Now we provide each todo-item with the todo object
+                it's representing, so that its content can be dynamic.
+                We also need to provide each component with a "key",
+                which will be explained later.
+                -->
+                <todo-item
+                    v-for="item in groceryList"
+                    v-bind:todo="item"
+                    v-bind:key="item.id"
+                ></todo-item>
+            </ol>
+        </div>
+
+        <!-- This will only be updated once -->
+        <span v-once>This will never change: {{ msg }}</span>
+
+        <!-- v-html used to print out raw HTML (this makes it vulnerable to XSS attacks!s) -->
+
+        <!-- Moustaches can't be used in HTML attributes. Use v-bind instead. -->
+        <div v-bind:id="dynamicId"></div>
+        <!-- Works a bit differently with boolean-->
+        <!-- If null, undefined, or false, the attribute will not be included-->
+        <button v-bind:disabled="isButtonDisabled">Button</button>
+
+        <!-- JavaScript expressions valid -->
+        <div v-bind:id="'list-' + id"></div>
+
+        <!-- this is a statement, not an expression: -->
+        <p>{{ var a = 1 }}</p>
+
+        <!-- flow control won't work either, use ternary -->
+        <p>{{ if (ok) { return message } }}</p>
+
+
+        <!--
+            Note that there are some constraints to the argument expression, as explained
+            in the "Dynamic Argument Expression Constraints" section below.
+        -->
+        <!-- If there is an attributeName called 'href', then it will become v-bind:href -->
+        <a v-bind:[attributeName]="url"> ... </a>
+
+        <!--
+            Modifiers are special postfixes denoted by '.', which means directive should be bound
+            in a certain way. 
+        -->
+        <!--
+            .prevent modifier tells v-on directive to call event.preventDefault() on triggered event
+        -->
+        <form v-on:submit.prevent="onSubmit"> ... </form>
+
+        <!-- Sometimes logic is complex enough that you need the computed property -->
+        <div id="example">
+            <p>Original message: "{{ message }}"</p>
+            <p>Computed reversed message: "{{ reversedMessage }}"</p>
+        </div>
+
+        <!--
+            v- is used to denote Vue specific attributes. This can be verbose at times, so a
+            shorthand exists for v-bind and v-on
+        -->
+        <!-- full syntax -->
+        <a v-bind:href="url"> ... </a>
+
+        <!-- shorthand -->
+        <a :href="url"> ... </a>
+
+        <!-- shorthand with dynamic argument (2.6.0+) -->
+        <a :[key]="url"> ... </a>
+
+        <!-- full syntax -->
+        <a v-on:click="doSomething"> ... </a>
+
+        <!-- shorthand -->
+        <a @click="doSomething"> ... </a>
+
+        <!-- shorthand with dynamic argument (2.6.0+) -->
+        <a @[event]="doSomething"> ... </a>
+
+        <div v-bind:class="classObject"></div>
+        
+        <script src="index.js"></script>
+
+        <my-component class="baz boo"></my-component>
+
+        <!-- Good idea to bind style object directly so template is cleaner -->
+        <!-- Go to line 99 in index.js to view the template -->
+        <div v-bind:style="styleObject"></div>
+
+        <!-- Conditional rendering w/ v-if and v-else-->
+        <h1 v-if="awesome">Vue is awesome!</h1>
+        <!-- v-else must follow a v-if or a v-else-if or it'll not be recognized -->
+        <h1 v-else>Oh no 😢</h1>
+
+        <!--
+            Vue reuses elements to save time.
+            Below, the input is saved.
+        -->
+        <template v-if="loginType === 'username'">
+            <label>Username</label>
+            <input placeholder="Enter your username">
+          </template>
+          <template v-else>
+            <label>Email</label>
+            <input placeholder="Enter your email address">
+          </template>
+
+          <!--
+              However, this is not always something you want.
+              key attribute allows things to be separate
+          -->
+          <template v-if="loginType === 'username'">
+            <label>Username</label>
+            <input placeholder="Enter your username" key="username-input">
+          </template>
+          <template v-else>
+            <label>Email</label>
+            <input placeholder="Enter your email address" key="email-input">
+          </template>
+
+          <!--
+              v-show always shows in DOM, different from v-if because v-if will not render
+              until condition is true for first time.
+          -->
+          <h1 v-show="ok">Hello!</h1>
+
+          <!-- Render items in a list -->
+          <!-- Can use 'of' instead of 'in' to more closely resemble JavaScript syntax -->
+          <ul id="example-1">
+            <li v-for="item in items">
+              {{ item.message }}
+            </li>
+          </ul>
+
+          <!-- v-for also supports index of item -->
+          <ul id="example-2">
+            <li v-for="(item, index) in items">
+              {{ parentMessage }} - {{ index }} - {{ item.message }}
+            </li>
+          </ul>
+
+          <!-- v-for also iterates over properties of an object -->
+          <ul id="v-for-object" class="demo">
+            <li v-for="value in object">
+              {{ value }}
+            </li>
+          </ul>
+
+          <!-- Can also provide a second argument -->
+          <div v-for="(value, name) in object">
+            {{ name }}: {{ value }}
+          </div>
+
+          <!-- And also the index -->
+          <div v-for="(value, name, index) in object">
+            {{ index }}. {{ name }}: {{ value }}
+          </div>
+
+          <!-- Always try to provide a key for v-for -->
+
+          <!--
+              Vue cannot detect the following:
+              1. Directly setting an item with the index e.g. vm.items[indexOfItem] = newValue
+              2. When you modify the length of the array e.g. vm.items.length = newLength
+
+              Can overcome with:
+              Vue.set(vm.items, indexOfItem, newValue)
+
+              // Array.prototype.splice
+              vm.items.splice(indexOfItem, 1, newValue)
+
+              Vue cannot detect property addition or deletion
+          -->
+
+          <!--
+              If you cannot use computed properties to filter something out (like in nested loops):
+          -->
+          <li v-for="n in even(numbers)">{{ n }}</li>
+
+          <!-- v-for for a range -->
+          <div>
+            <span v-for="n in 10">{{ n }} </span>
+          </div>
+
+          <!--
+              can use template w/ v-for to render multiple elements
+          -->
+          <ul>
+            <template v-for="item in items">
+              <li>{{ item.msg }}</li>
+              <li class="divider" role="presentation"></li>
+            </template>
+          </ul>
+
+          <!--
+               v-for has higher priority than v-if; will be run on each iteration separately 
+              can be useful to render some nodes
+          -->
+          <li v-for="todo in todos" v-if="!todo.isComplete">
+            {{ todo }}
+          </li>
+
+          <!--
+              Can use v-for on a custom component
+              key is required, however
+          -->
+          <my-component v-for="item in items" :key="item.id"></my-component>
+
+
+          <div id="todo-list-example">
+            <form v-on:submit.prevent="addNewTodo">
+              <label for="new-todo">Add a todo</label>
+              <input
+                v-model="newTodoText"
+                id="new-todo"
+                placeholder="E.g. Feed the cat"
+              >
+              <button>Add</button>
+            </form>
+            <ul>
+              <li
+                is="todo-item"
+                v-for="(todo, index) in todos"
+                v-bind:key="todo.id"
+                v-bind:title="todo.title"
+                v-on:remove="todos.splice(index, 1)"
+              ></li>
+            </ul>
+          </div>
+
+          <!--
+            Use v-on to listen to DOM elements and run JS when triggered
+          -->
+          <div id="example-4">
+            <button v-on:click="counter += 1">Add 1</button>
+            <p>The button above has been clicked {{ counter }} times.</p>
+          </div>
+
+          <!--
+            v-on cal also accept method names if complex enough
+          -->
+          <div id="example-5">
+            <!-- `greet` is the name of a method defined below -->
+            <button v-on:click="greet">Greet</button>
+          </div>
+
+          <!--
+            Can also use methods in inline JS statement
+          -->
+          <div id="example-6">
+            <button v-on:click="say('hi')">Say hi</button>
+            <button v-on:click="say('what')">Say what</button>
+          </div>
+
+          <!--
+            May need to access original DOM event in inline statement handler.
+            Can pass into a method using the special $event variable.
+          -->
+          <button v-on:click="warn('Form cannot be submitted yet.', $event)">
+            Submit
+          </button>
+
+          <!--
+            Text binding
+          -->
+          <input v-model="message" placeholder="edit me">
+          <p>Message is: {{ message }}</p>
+
+          <!--
+            Multiline text
+          -->
+          <span>Multiline message is:</span>
+          <p style="white-space: pre-line;">{{ message }}</p>
+          <br>
+          <textarea v-model="message" placeholder="add multiple lines"></textarea>
+
+          <!--
+            Checkbox
+          -->
+          <input type="checkbox" id="checkbox" v-model="checked">
+          <label for="checkbox">{{ checked }}</label>
+
+          <!--
+            Multiple checkboxes
+          -->
+          <div id='example-check'>
+            <input type="checkbox" id="jack" value="Jack" v-model="checkedNames">
+            <label for="jack">Jack</label>
+            <input type="checkbox" id="john" value="John" v-model="checkedNames">
+            <label for="john">John</label>
+            <input type="checkbox" id="mike" value="Mike" v-model="checkedNames">
+            <label for="mike">Mike</label>
+            <br>
+            <span>Checked names: {{ checkedNames }}</span>
+          </div>
+
+          <!--
+            Radio buttons
+          -->
+          <input type="radio" id="one" value="One" v-model="picked">
+          <label for="one">One</label>
+          <br>
+          <input type="radio" id="two" value="Two" v-model="picked">
+          <label for="two">Two</label>
+          <br>
+          <span>Picked: {{ picked }}</span>
+
+          <!--
+            Select statement
+          -->
+          <select id="select-statement" v-model="selected">
+            <option disabled value="">Please select one</option>
+            <option>A</option>
+            <option>B</option>
+            <option>C</option>
+          </select>
+          <span>Selected: {{ selected }}</span>
+
+          <!--
+            Multiple select (bound to array)
+          -->
+
+          <select v-model="selected" multiple>
+            <option>A</option>
+            <option>B</option>
+            <option>C</option>
+          </select>
+          <br>
+          <span>Selected: {{ selected }}</span>
+
+          <!--
+            Dynamic options rendered with v-for
+          -->
+          <select id="dynamicOptions" v-model="selected">
+            <option v-for="option in options" v-bind:value="option.value">
+              {{ option.text }}
+            </option>
+          </select>
+          <span>Selected: {{ selected }}</span>
+
+          <!-- `picked` is a string "a" when checked -->
+          <input type="radio" v-model="picked" value="a">
+
+          <!-- `toggle` is either true or false -->
+          <input type="checkbox" v-model="toggle">
+
+          <!-- `selected` is a string "abc" when the first option is selected -->
+          <select v-model="selected">
+            <option value="abc">ABC</option>
+          </select>
+
+          <!--
+            To use custom values
+            To check: vm.toggle === 'yes'
+            To uncheck: vm.toggle === 'no'
+          -->
+          <input
+            type="checkbox"
+            v-model="toggle"
+            true-value="yes"
+            false-value="no"
+          >
+
+          <input type="radio" v-model="pick" v-bind:value="a">
+          <!--
+            When checked: vm.pick === vm.a
+          -->
+
+          <select v-model="selected">
+            <!-- inline object literal -->
+            <option v-bind:value="{ number: 123 }">123</option>
+          </select>
+          <!--
+            when selected:
+            typeof vm.selected // => 'object'
+            vm.selected.number // => 123
+          -->
+    </body>
+</html>
